@@ -4,14 +4,17 @@ import { AuthContext } from "../context/AuthContext";
 import { ticketAPI } from "../services/api";
 import ChatBox from "../components/ChatBox";
 import Navbar from "../components/Navbar";
+import { useToast } from "../context/ToastContext";
 
 export default function TicketDetailPage() {
+  const toast = useToast();
   const { ticketId } = useParams();
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
   const [ticket, setTicket] = useState(null);
   const [agent, setAgent] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [hoverRating, setHoverRating] = useState(0);
 
   useEffect(() => {
     fetchTicketDetails();
@@ -40,7 +43,7 @@ export default function TicketDetailPage() {
         }
       }
     } catch (err) {
-      alert("Failed to load ticket");
+      toast.error("Failed to load ticket");
     } finally {
       setLoading(false);
     }
@@ -63,7 +66,7 @@ export default function TicketDetailPage() {
         <Navbar />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center">
-            <h2 className="text-2xl font-semibold text-gray-900">
+            <h2 className="text-2xl font-semibold text-slate-900">
               Ticket not found
             </h2>
             <button onClick={() => navigate(-1)} className="btn-primary mt-4">
@@ -204,6 +207,59 @@ export default function TicketDetailPage() {
                     {ticket.description}
                   </p>
                 </div>
+
+                {/* CSAT Rating Widget */}
+                {ticket.status === "Resolved" && (
+                  <div className="border-t pt-4">
+                    <p className="text-sm text-slate-500 mb-2">Customer Satisfaction</p>
+                    {ticket.rating ? (
+                      <div className="flex items-center gap-1">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <span
+                            key={`static-${star}`}
+                            className={`text-3xl ${star <= ticket.rating ? 'text-amber-400 drop-shadow-sm' : 'text-slate-200'}`}
+                          >
+                            ★
+                          </span>
+                        ))}
+                        <span className="text-sm font-semibold text-slate-700 ml-2 mt-1">
+                          {ticket.rating}/5
+                        </span>
+                      </div>
+                    ) : user.role === "user" ? (
+                      <div>
+                        <p className="text-xs text-slate-600 mb-2">How would you rate your support experience?</p>
+                        <div className="flex items-center gap-1">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <button
+                              key={`action-${star}`}
+                              type="button"
+                              onMouseEnter={() => setHoverRating(star)}
+                              onMouseLeave={() => setHoverRating(0)}
+                              onClick={async () => {
+                                try {
+                                  const res = await ticketAPI.rateTicket(ticket._id, { rating: star });
+                                  if (res.data.success) {
+                                    toast.success("Thank you for your feedback!");
+                                    setTicket({ ...ticket, rating: star });
+                                  }
+                                } catch (err) {
+                                  toast.error(err.response?.data?.message || "Failed to submit rating.");
+                                }
+                              }}
+                              className={`text-3xl transition-transform duration-200 focus:outline-none hover:scale-110 ${star <= hoverRating ? 'text-amber-400 drop-shadow-sm' : 'text-slate-200'}`}
+                              title={`Rate ${star} stars`}
+                            >
+                              ★
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-sm italic text-slate-400">Waiting for user rating</p>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>

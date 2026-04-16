@@ -105,7 +105,7 @@ export default function ChatPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Chat List */}
           <div className="surface-card overflow-hidden">
-            <div className="p-4 border-b border-amber-100/70 bg-amber-50/60">
+            <div className="p-4 border-b border-amber-100 bg-amber-50">
               <h2 className="font-semibold text-slate-900">Conversations</h2>
             </div>
 
@@ -153,7 +153,7 @@ export default function ChatPage() {
             {activeChat ? (
               <>
                 {/* Header */}
-                <div className="p-4 border-b border-amber-100/70 bg-amber-50/60">
+                <div className="p-4 border-b border-amber-100 bg-amber-50">
                   <h3 className="font-semibold text-slate-900">
                     {activeChat.latestMessage?.senderRole === "agent"
                       ? "Support Agent"
@@ -165,7 +165,7 @@ export default function ChatPage() {
                 </div>
 
                 {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-4 bg-amber-50/40">
+                <div className="flex-1 overflow-y-auto p-4 bg-amber-50">
                   {messages.length === 0 ? (
                     <div className="text-center text-slate-500 mt-8">
                       <p>Start a conversation</p>

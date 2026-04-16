@@ -40,6 +40,7 @@ export const ticketAPI = {
   assignTicket: (id, data) => api.put(`/tickets/assign/${id}`, data),
   reopenTicket: (id) => api.put(`/tickets/reopen/${id}`),
   getSupportAgents: () => api.get("/tickets/agents/list"),
+  rateTicket: (id, data) => api.post(`/tickets/${id}/rate`, data),
 };
 
 // Chat APIs

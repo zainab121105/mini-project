@@ -31,13 +31,21 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-amber-100/70 bg-white/80 backdrop-blur">
+    <nav className="sticky top-0 !z-50 border-b border-amber-100/70 bg-white/80 backdrop-blur">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <button
             type="button"
-            onClick={() => navigate(user ? "/dashboard" : "/")}
+            onClick={() => {
+              if (user) {
+                if (user.role === "manager") navigate("/manager-dashboard");
+                else if (user.role === "agent") navigate("/agent-dashboard");
+                else navigate("/dashboard");
+              } else {
+                navigate("/");
+              }
+            }}
             className="flex items-center gap-2 text-left"
           >
             <div className="h-9 w-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold">
@@ -112,6 +120,12 @@ export default function Navbar() {
                   >
                     Reports
                   </button>
+                  <button
+                    onClick={() => navigate("/manager/performance")}
+                    className="nav-link"
+                  >
+                    Performance
+                  </button>
                 </>
               )}
             </div>
@@ -143,7 +157,7 @@ export default function Navbar() {
 
                   {showMenu && (
                     <div className="absolute right-0 mt-3 w-60 surface-card overflow-hidden shadow-2xl z-50">
-                      <div className="p-4 border-b border-amber-100/70 bg-amber-50/70">
+                      <div className="p-4 border-b border-slate-200 bg-slate-50">
                         <p className="font-semibold text-slate-900">
                           {user.name}
                         </p>
@@ -151,13 +165,13 @@ export default function Navbar() {
                       </div>
                       <button
                         onClick={() => navigate("/profile")}
-                        className="w-full text-left px-4 py-3 text-slate-700 hover:bg-amber-50"
+                        className="w-full text-left px-4 py-3 text-slate-700 hover:bg-slate-100"
                       >
                         Profile settings
                       </button>
                       <button
                         onClick={handleLogout}
-                        className="w-full text-left px-4 py-3 text-rose-600 hover:bg-rose-50 border-t border-amber-100/70"
+                        className="w-full text-left px-4 py-3 text-rose-500 hover:bg-slate-100 border-t border-slate-200"
                       >
                         Sign out
                       </button>

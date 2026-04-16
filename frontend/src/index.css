@@ -85,6 +85,38 @@
     background-color: rgba(245, 158, 11, 0.12) !important;
   }
 
+  body[data-theme="dark"] .bg-rose-50 {
+    background-color: rgba(225, 29, 72, 0.12) !important;
+  }
+
+  body[data-theme="dark"] .bg-emerald-50 {
+    background-color: rgba(16, 185, 129, 0.12) !important;
+  }
+
+  body[data-theme="dark"] .bg-sky-50 {
+    background-color: rgba(14, 165, 233, 0.12) !important;
+  }
+
+  body[data-theme="dark"] .bg-amber-100 {
+    background-color: rgba(245, 158, 11, 0.18) !important;
+  }
+
+  body[data-theme="dark"] .bg-slate-100 {
+    background-color: #1e293b !important;
+  }
+
+  body[data-theme="dark"] .bg-slate-200 {
+    background-color: #334155 !important;
+  }
+
+  body[data-theme="dark"] .bg-slate-300 {
+    background-color: #475569 !important;
+  }
+
+  body[data-theme="dark"] .border-slate-200 {
+    border-color: #334155 !important;
+  }
+
   body[data-theme="dark"] .bg-amber-100 {
     background-color: rgba(245, 158, 11, 0.18) !important;
   }

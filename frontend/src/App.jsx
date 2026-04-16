@@ -7,6 +7,8 @@ import {
 } from "react-router-dom";
 import { AuthProvider, AuthContext } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
+import { ToastProvider } from "./context/ToastContext";
+import ToastContainer from "./components/ToastContainer";
 
 // Pages
 import LandingPage from "./pages/LandingPage";
@@ -20,6 +22,7 @@ import AgentDashboard from "./pages/AgentDashboard";
 import AgentActionsPage from "./pages/AgentActionsPage";
 import ManagerDashboard from "./pages/ManagerDashboard";
 import ReportsPage from "./pages/ReportsPage";
+import AgentPerformancePage from "./pages/AgentPerformancePage";
 import CreateTicketPage from "./pages/CreateTicketPage";
 import ChatPage from "./pages/ChatPage";
 import ProfilePage from "./pages/ProfilePage";
@@ -111,6 +114,15 @@ function AppRoutes() {
       />
 
       <Route
+        path="/manager/performance"
+        element={
+          <ProtectedRoute requiredRole="manager">
+            <AgentPerformancePage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
         path="/messages"
         element={
           <ProtectedRoute>
@@ -135,13 +147,18 @@ function AppRoutes() {
 
 function App() {
   return (
-    <Router>
-      <ThemeProvider>
-        <AuthProvider>
-          <AppRoutes />
-        </AuthProvider>
-      </ThemeProvider>
-    </Router>
+    <ThemeProvider>
+      <AuthProvider>
+        <ToastProvider>
+          <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-200">
+            <Router>
+              <ToastContainer />
+              <AppRoutes />
+            </Router>
+          </div>
+        </ToastProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 

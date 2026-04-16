@@ -3,8 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { ticketAPI } from "../services/api";
 import Navbar from "../components/Navbar";
+import { useToast } from "../context/ToastContext";
 
 export default function AgentActionsPage() {
+  const toast = useToast();
   const [tickets, setTickets] = useState([]);
   const [stats, setStats] = useState({
     totalAssigned: 0,
@@ -58,7 +60,7 @@ export default function AgentActionsPage() {
 
   const handleEscalate = async (ticketId) => {
     if (!escMessage) {
-      alert("Please enter an escalation message");
+      toast.error("Please enter an escalation message");
       return;
     }
 
@@ -68,12 +70,12 @@ export default function AgentActionsPage() {
       });
 
       if (response.data.success) {
-        alert("Ticket escalated to manager");
+        toast.success("Ticket escalated to manager");
         setEscMessage("");
         fetchAssignedTickets();
       }
     } catch (err) {
-      alert("Failed to escalate ticket");
+      toast.error("Failed to escalate ticket");
     }
   };
 
@@ -84,11 +86,11 @@ export default function AgentActionsPage() {
           status: "Resolved",
         });
         if (response.data.success) {
-          alert("Ticket marked as resolved");
+          toast.success("Ticket marked as resolved");
           fetchAssignedTickets();
         }
       } catch (err) {
-        alert("Failed to resolve ticket");
+        toast.error("Failed to resolve ticket");
       }
     }
   };
