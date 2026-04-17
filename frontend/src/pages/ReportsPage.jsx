@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 import { ticketAPI } from "../services/api";
 import Navbar from "../components/Navbar";
 
@@ -142,7 +142,7 @@ export default function ReportsPage() {
       case "Escalated":
         return "bg-purple-100 text-purple-800";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-slate-100 text-slate-800";
     }
   };
 
@@ -432,7 +432,7 @@ export default function ReportsPage() {
                       {count}
                     </span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="w-full bg-slate-200 rounded-full h-2">
                     <div
                       className={`h-2 rounded-full ${
                         status === "Open"

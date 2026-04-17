@@ -36,6 +36,12 @@ const ticketSchema = new mongoose.Schema(
       ref: 'SupportAgent',
       default: null,
     },
+    rating: {
+      type: Number,
+      min: 1,
+      max: 5,
+      default: null,
+    },
   },
   {
     timestamps: true,

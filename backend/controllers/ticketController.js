@@ -638,3 +638,41 @@ exports.getAssignedTickets = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+// Rate Ticket
+exports.rateTicket = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { rating } = req.body;
+
+    if (!rating || rating < 1 || rating > 5) {
+      return res.status(400).json({ success: false, message: 'Please provide a valid rating between 1 and 5' });
+    }
+
+    const ticket = await Ticket.findById(id);
+
+    if (!ticket) {
+      return res.status(404).json({ success: false, message: 'Ticket not found' });
+    }
+
+    if (ticket.status !== 'Resolved') {
+      return res.status(400).json({ success: false, message: 'Only resolved tickets can be rated' });
+    }
+
+    // Only the ticket owner can rate it
+    if (String(ticket.userId) !== String(req.user.id)) {
+      return res.status(403).json({ success: false, message: 'Not authorized to rate this ticket' });
+    }
+
+    ticket.rating = Number(rating);
+    await ticket.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Thank you for your feedback! Ticket rated successfully.',
+      ticket,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

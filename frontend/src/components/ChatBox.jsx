@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext, useRef } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { chatAPI } from "../services/api";
+import { useToast } from "../context/ToastContext";
 
 export default function ChatBox({
   ticketId,
@@ -13,12 +14,18 @@ export default function ChatBox({
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [polling, setPolling] = useState(true);
-  const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
   const { user } = useContext(AuthContext);
+  const toast = useToast();
 
   // Auto-scroll to bottom
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTo({
+        top: messagesContainerRef.current.scrollHeight,
+        behavior: "smooth"
+      });
+    }
   };
 
   useEffect(() => {
@@ -67,7 +74,7 @@ export default function ChatBox({
         scrollToBottom();
       }
     } catch (err) {
-      alert("Failed to send message");
+      toast.error("Failed to send message");
     } finally {
       setLoading(false);
     }
@@ -100,7 +107,7 @@ export default function ChatBox({
   return (
     <div className="surface-card h-full flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="border-b border-amber-100/70 bg-amber-50/80 p-4">
+      <div className="border-b border-amber-100 bg-amber-50 p-4">
         <div className="flex justify-between items-start">
           <div>
             <h3 className="font-semibold text-lg text-slate-900">
@@ -122,9 +129,9 @@ export default function ChatBox({
       </div>
 
       {/* Messages Container */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-amber-50/40">
+      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4 bg-amber-50">
         {messages.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-gray-400">
+          <div className="flex items-center justify-center h-full text-slate-400">
             <p className="text-center">
               No messages yet. Start the conversation!
             </p>
@@ -143,11 +150,11 @@ export default function ChatBox({
               <div key={msg._id}>
                 {showDateSeparator && (
                   <div className="flex items-center gap-4 my-4">
-                    <div className="flex-1 h-px bg-gray-300"></div>
-                    <span className="text-xs text-gray-500">
+                    <div className="flex-1 h-px bg-slate-300"></div>
+                    <span className="text-xs text-slate-500">
                       {formatDate(msg.createdAt)}
                     </span>
-                    <div className="flex-1 h-px bg-gray-300"></div>
+                    <div className="flex-1 h-px bg-slate-300"></div>
                   </div>
                 )}
 
@@ -183,14 +190,13 @@ export default function ChatBox({
             );
           })
         )}
-        <div ref={messagesEndRef} />
       </div>
 
       {/* Message Input - Hidden if ticket is resolved */}
       {canChat ? (
         <form
           onSubmit={handleSendMessage}
-          className="border-t border-amber-100/70 p-4 bg-white"
+          className="border-t border-amber-100 p-4 bg-white"
         >
           <div className="flex gap-2">
             <input
@@ -214,7 +220,7 @@ export default function ChatBox({
           </p>
         </form>
       ) : (
-        <div className="border-t border-amber-100/70 p-4 bg-amber-50">
+        <div className="border-t border-amber-100 p-4 bg-amber-50">
           <p className="text-sm text-amber-800 text-center">
             Ticket is resolved. New messages cannot be sent.
           </p>

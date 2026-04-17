@@ -87,10 +87,10 @@ export default function AgentAssignmentCard({
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <p className="font-semibold text-gray-800">
+                    <p className="font-semibold text-slate-900">
                       {getRoleIcon(agent.role)} {agent.name}
                     </p>
-                    <p className="text-xs text-gray-600">{agent.role}</p>
+                    <p className="text-xs text-slate-600">{agent.role}</p>
                     <div className="flex flex-wrap gap-1 mt-1">
                       {agent.expertise.map((exp) => (
                         <span

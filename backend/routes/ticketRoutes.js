@@ -9,6 +9,7 @@ const {
   getSupportAgents,
   getAssignedTickets,
   reopenTicket,
+  rateTicket,
 } = require('../controllers/ticketController');
 
 const router = express.Router();
@@ -17,6 +18,7 @@ const router = express.Router();
 router.post('/create', protect, createTicket);
 router.get('/user', protect, getUserTickets);
 router.put('/reopen/:id', protect, reopenTicket);
+router.post('/:id/rate', protect, rateTicket);
 
 // Agent routes - get only assigned tickets
 router.get('/assigned', protect, authorize(['agent']), getAssignedTickets);

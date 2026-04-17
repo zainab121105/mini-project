@@ -5,8 +5,10 @@ import { ticketAPI } from "../services/api";
 import EnhancedTicketCard from "../components/EnhancedTicketCard";
 import AgentAssignmentCard from "../components/AgentAssignmentCard";
 import Navbar from "../components/Navbar";
+import { useToast } from "../context/ToastContext";
 
 export default function ManagerDashboard() {
+  const toast = useToast();
   const [tickets, setTickets] = useState([]);
   const [agents, setAgents] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -16,6 +18,9 @@ export default function ManagerDashboard() {
   const [categoryFilter, setCategoryFilter] = useState("");
   const [sortBy, setSortBy] = useState("recent");
   const [selectedTicket, setSelectedTicket] = useState(null);
+  const [autoAssignPriority, setAutoAssignPriority] = useState("All");
+  const [isAutoAssigning, setIsAutoAssigning] = useState(false);
+  const [activeTab, setActiveTab] = useState("active");
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
 
@@ -55,7 +60,7 @@ export default function ManagerDashboard() {
         setTickets(filteredTickets);
       }
     } catch (err) {
-      alert("Failed to fetch tickets");
+      toast.error("Failed to fetch tickets");
     } finally {
       setLoading(false);
     }
@@ -89,10 +94,10 @@ export default function ManagerDashboard() {
         setSelectedTicket((prev) =>
           prev && prev._id === ticketId ? { ...prev, status: newStatus } : prev,
         );
-        alert("✅ Ticket status updated successfully!");
+        toast.success("✅ Ticket status updated successfully!");
       }
     } catch (err) {
-      alert("❌ Failed to update ticket");
+      toast.error("❌ Failed to update ticket");
     }
   };
 
@@ -121,13 +126,74 @@ export default function ManagerDashboard() {
               }
             : prev,
         );
-        alert("✅ Ticket assigned successfully!");
+        toast.success("✅ Ticket assigned successfully!");
       }
     } catch (err) {
-      alert(
+      toast.error(
         "❌ Failed to assign ticket: " +
           (err.response?.data?.message || "Error"),
       );
+    }
+  };
+
+  const handleAutoAssign = async () => {
+    setIsAutoAssigning(true);
+    try {
+      const ticketsToAssign = tickets.filter(
+        (t) =>
+          !t.assignedTo &&
+          t.status !== "Resolved" &&
+          (autoAssignPriority === "All" || t.priority === autoAssignPriority)
+      );
+
+      let assignedCount = 0;
+      let tasks = [];
+
+      for (let ticket of ticketsToAssign) {
+        const capableAgent = agents.find(agent => agent.expertise.includes(ticket.category));
+        
+        if (capableAgent) {
+          tasks.push(
+            ticketAPI.assignTicket(ticket._id, { agentId: capableAgent._id })
+              .then(res => {
+                if(res.data.success) {
+                  return { success: true, ticketId: ticket._id, updatedTicket: res.data.ticket };
+                }
+                return { success: false };
+              })
+              .catch(err => ({ success: false }))
+          );
+        }
+      }
+
+      if (tasks.length === 0) {
+        toast.info("No unassigned tickets found matching this priority with available capable agents.");
+        setIsAutoAssigning(false);
+        return;
+      }
+
+      const results = await Promise.all(tasks);
+      let updatedTicketsMap = {};
+      results.forEach(res => {
+        if (res.success) {
+          assignedCount++;
+          updatedTicketsMap[res.ticketId] = res.updatedTicket;
+        }
+      });
+
+      if (assignedCount > 0) {
+        setTickets(prev => prev.map(t => updatedTicketsMap[t._id] ? { ...t, assignedTo: updatedTicketsMap[t._id].assignedTo, status: updatedTicketsMap[t._id].status } : t));
+        if (selectedTicket && updatedTicketsMap[selectedTicket._id]) {
+           setSelectedTicket(prev => ({ ...prev, assignedTo: updatedTicketsMap[selectedTicket._id].assignedTo, status: updatedTicketsMap[selectedTicket._id].status }));
+        }
+        toast.success(`✅ Successfully auto-assigned ${assignedCount} tickets!`);
+      } else {
+        toast.error("❌ Failed to assign any tickets.");
+      }
+    } catch (err) {
+      toast.error("❌ Error during auto-assignment");
+    } finally {
+      setIsAutoAssigning(false);
     }
   };
 
@@ -177,6 +243,10 @@ export default function ManagerDashboard() {
     satisfactionRate: "92%",
   };
 
+  const displayedTickets = tickets.filter((t) =>
+    activeTab === "active" ? t.status !== "Resolved" : t.status === "Resolved"
+  );
+
   return (
     <div className="page-shell">
       <Navbar />
@@ -218,19 +288,35 @@ export default function ManagerDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
             <div className="surface-card p-6">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4 border-b border-slate-100 pb-4">
                 <div>
-                  <h2 className="text-2xl font-semibold text-slate-900">
-                    Ticket queue
-                  </h2>
-                  <p className="text-sm text-slate-500">
-                    {tickets.length} tickets in view
+                  <div className="flex items-center gap-4">
+                    <h2 className="text-2xl font-semibold text-slate-900">
+                      Ticket queue
+                    </h2>
+                    <div className="flex bg-slate-100 p-1 rounded-lg">
+                      <button
+                        onClick={() => setActiveTab("active")}
+                        className={`text-sm px-3 py-1 rounded-md font-medium transition ${activeTab === "active" ? "bg-white shadow text-slate-900" : "text-slate-500 hover:text-slate-700"}`}
+                      >
+                        Active
+                      </button>
+                      <button
+                        onClick={() => setActiveTab("resolved")}
+                        className={`text-sm px-3 py-1 rounded-md font-medium transition ${activeTab === "resolved" ? "bg-white shadow text-slate-900" : "text-slate-500 hover:text-slate-700"}`}
+                      >
+                        Resolved
+                      </button>
+                    </div>
+                  </div>
+                  <p className="text-sm text-slate-500 mt-2">
+                    {displayedTickets.length} tickets in view
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={fetchAllTickets}
-                  className="btn-secondary"
+                  className="btn-secondary mt-1 md:mt-0"
                 >
                   Refresh
                 </button>
@@ -241,13 +327,13 @@ export default function ManagerDashboard() {
                   <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500"></div>
                   <p className="text-slate-600 mt-4">Loading tickets...</p>
                 </div>
-              ) : tickets.length === 0 ? (
+              ) : displayedTickets.length === 0 ? (
                 <div className="text-center py-12">
                   <p className="text-slate-500 text-lg">No tickets found</p>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {tickets.map((ticket) => {
+                  {displayedTickets.map((ticket) => {
                     const isSelected = selectedTicket?._id === ticket._id;
                     return (
                       <button
@@ -315,7 +401,7 @@ export default function ManagerDashboard() {
             </div>
           </div>
 
-          <div className="space-y-6 lg:sticky lg:top-24 lg:self-start">
+          <div className="space-y-6 lg:sticky lg:top-24 lg:h-[calc(100vh-6rem)] lg:overflow-y-auto lg:pr-2 lg:pb-6">
             <div className="surface-card p-6">
               <h3 className="text-lg font-semibold text-slate-900 mb-4">
                 Selected ticket
@@ -392,6 +478,37 @@ export default function ManagerDashboard() {
                   Select a ticket to view its details and actions.
                 </p>
               )}
+            </div>
+
+            <div className="surface-card p-6">
+              <h3 className="text-lg font-semibold text-slate-900 mb-4">
+                Auto-assign tickets
+              </h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-slate-700 font-semibold mb-2">
+                    Target Priority
+                  </label>
+                  <select
+                    value={autoAssignPriority}
+                    onChange={(e) => setAutoAssignPriority(e.target.value)}
+                    className="select-field"
+                  >
+                    <option value="All">All Priorities</option>
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                  </select>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleAutoAssign}
+                  disabled={isAutoAssigning}
+                  className="btn-primary w-full disabled:opacity-50"
+                >
+                  {isAutoAssigning ? "Assigning..." : "Auto-assign Tickets"}
+                </button>
+              </div>
             </div>
 
             <div className="surface-card p-6">
