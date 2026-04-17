@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 import { ticketAPI } from "../services/api";
 import Navbar from "../components/Navbar";
 
