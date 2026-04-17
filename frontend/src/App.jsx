@@ -53,7 +53,7 @@ function AppRoutes() {
       <Route
         path="/dashboard"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute requiredRole="user">
             <UserDashboard />
           </ProtectedRoute>
         }
@@ -62,7 +62,7 @@ function AppRoutes() {
       <Route
         path="/create-ticket"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute requiredRole="user">
             <CreateTicketPage />
           </ProtectedRoute>
         }

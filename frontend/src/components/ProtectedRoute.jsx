@@ -10,6 +10,8 @@ export default function ProtectedRoute({ children, requiredRole = null }) {
   }
 
   if (requiredRole && user?.role !== requiredRole) {
+    if (user?.role === "manager") return <Navigate to="/manager-dashboard" />;
+    if (user?.role === "agent") return <Navigate to="/agent-dashboard" />;
     return <Navigate to="/dashboard" />;
   }
 
