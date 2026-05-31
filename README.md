@@ -1,3 +1,56 @@
+# Support Ticket Management - Mini Project
+
+This repository contains a full-stack support ticket management system with a Node/Express backend and a React + Vite frontend.
+
+Getting started
+
+1. Copy env examples to `.env` files in `backend/` and `frontend/` and set values.
+
+Backend
+
+```bash
+cd backend
+npm install
+npm run dev
+```
+
+Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+
+Production
+
+1. Build the frontend and serve it (or use the provided Dockerfiles).
+
+Using Docker Compose (recommended):
+
+```bash
+docker compose build
+docker compose up -d
+```
+
+This will start `mongo`, the `backend` on port `5000`, and the `frontend` on port `3000`.
+
+Manual (without Docker):
+
+```bash
+# Build frontend
+cd frontend
+npm install
+npm run build
+
+# Start backend in production
+cd ../backend
+npm install --production
+NODE_ENV=production npm start
+```
+
+License: MIT
 # Support Ticket Management System
 
 A full-stack MERN application for managing support tickets efficiently.

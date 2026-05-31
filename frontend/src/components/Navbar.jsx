@@ -27,6 +27,7 @@ export default function Navbar() {
   };
 
   const getRoleLabel = (role) => {
+    if (!role || typeof role !== 'string') return 'User';
     return role.charAt(0).toUpperCase() + role.slice(1);
   };
 
